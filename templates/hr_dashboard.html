@@ -3,53 +3,89 @@
 {% block title %}HR Dashboard - Passport OCR System{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="display-6 fw-bold">
-                <i class="fas fa-users me-3"></i>
+            <h1 class="display-5 fw-bold">
+                <i class="fas fa-chart-line me-3 text-primary"></i>
                 HR Management Dashboard
             </h1>
-            <p class="text-muted">Automated recruitment, leave management, and query handling</p>
+            <p class="text-muted fs-6">Complete HR automation with intelligent passport processing</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+                <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Process Passport
+            </a>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Enhanced Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
-                    <i class="fas fa-passport fa-2x mb-2"></i>
-                    <h3>{{ total_records }}</h3>
-                    <p class="mb-0">Passport Records</p>
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="fas fa-passport fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ total_records }}</h2>
+                    <p class="text-muted mb-0">Passport Records</p>
+                    <small class="text-success">
+                        <i class="fas fa-arrow-up me-1"></i>+{{ total_records }} total
+                    </small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
-                    <i class="fas fa-user-tie fa-2x mb-2"></i>
-                    <h3>{{ total_employees }}</h3>
-                    <p class="mb-0">Employees</p>
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="fas fa-user-tie fa-2x text-success"></i>
+                        </div>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ total_employees }}</h2>
+                    <p class="text-muted mb-0">Active Employees</p>
+                    <small class="text-info">
+                        <i class="fas fa-users me-1"></i>HR managed
+                    </small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
-                    <i class="fas fa-calendar-alt fa-2x mb-2"></i>
-                    <h3>{{ pending_leaves }}</h3>
-                    <p class="mb-0">Pending Leave Requests</p>
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                            <i class="fas fa-calendar-check fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ pending_leaves }}</h2>
+                    <p class="text-muted mb-0">Pending Leaves</p>
+                    <small class="text-warning">
+                        <i class="fas fa-clock me-1"></i>Awaiting review
+                    </small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
-                    <i class="fas fa-question-circle fa-2x mb-2"></i>
-                    <h3>{{ open_queries }}</h3>
-                    <p class="mb-0">Open HR Queries</p>
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                            <i class="fas fa-robot fa-2x text-info"></i>
+                        </div>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ open_queries }}</h2>
+                    <p class="text-muted mb-0">AI Queries</p>
+                    <small class="text-primary">
+                        <i class="fas fa-brain me-1"></i>Auto-resolved
+                    </small>
                 </div>
             </div>
         </div>
@@ -91,73 +127,306 @@
         </div>
     </div>
 
-    <!-- Recent Activities -->
-    <div class="row">
-        <!-- Recent Passport Records -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-passport me-2"></i>
-                        Recent Passport Records
-                    </h6>
-                </div>
-                <div class="card-body">
-                    {% if recent_records %}
-                        {% for record in recent_records %}
-                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                            <div>
-                                <div class="fw-bold">{{ record.given_names }} {{ record.surname }}</div>
-                                <small class="text-muted">{{ record.passport_number or 'No passport number' }}</small>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-muted">{{ record.created_at.strftime('%m/%d') }}</small>
-                                <div>
-                                    <a href="{{ url_for('create_job_offer', record_id=record.id) }}" 
-                                       class="btn btn-sm btn-outline-success">
-                                        <i class="fas fa-briefcase"></i> Offer
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">No passport records yet.</p>
-                    {% endif %}
-                </div>
-            </div>
+    <!-- Main Content Tabs -->
+    <div class="card shadow-sm">
+        <div class="card-header border-0 bg-white">
+            <ul class="nav nav-tabs card-header-tabs" id="hrTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-semibold" id="passport-tab" data-bs-toggle="tab" data-bs-target="#passport-pane" type="button" role="tab">
+                        <i class="fas fa-passport me-2"></i>Passport Records
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-semibold" id="employees-tab" data-bs-toggle="tab" data-bs-target="#employees-pane" type="button" role="tab">
+                        <i class="fas fa-users me-2"></i>Employees
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-semibold" id="offers-tab" data-bs-toggle="tab" data-bs-target="#offers-pane" type="button" role="tab">
+                        <i class="fas fa-briefcase me-2"></i>Job Offers
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-semibold" id="queries-tab" data-bs-toggle="tab" data-bs-target="#queries-pane" type="button" role="tab">
+                        <i class="fas fa-question-circle me-2"></i>HR Queries
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-semibold" id="leaves-tab" data-bs-toggle="tab" data-bs-target="#leaves-pane" type="button" role="tab">
+                        <i class="fas fa-calendar-alt me-2"></i>Leave Requests
+                    </button>
+                </li>
+            </ul>
         </div>
-
-        <!-- Recent Queries -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-question-circle me-2"></i>
-                        Recent HR Queries
-                    </h6>
-                </div>
-                <div class="card-body">
-                    {% if recent_queries %}
-                        {% for query in recent_queries %}
-                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                            <div>
-                                <div class="fw-bold">{{ query.subject }}</div>
-                                <small class="text-muted">{{ query.contact_name or 'Anonymous' }}</small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-{% if query.auto_resolved %}success{% elif query.status == 'open' %}warning{% else %}info{% endif %}">
-                                    {% if query.auto_resolved %}AI Resolved{% else %}{{ query.status.title() }}{% endif %}
-                                </span>
-                                <div>
-                                    <small class="text-muted">{{ query.submitted_at.strftime('%m/%d') }}</small>
-                                </div>
-                            </div>
+        
+        <div class="card-body">
+            <div class="tab-content" id="hrTabsContent">
+                <!-- Passport Records Tab -->
+                <div class="tab-pane fade show active" id="passport-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-passport text-primary me-2"></i>
+                            Passport Records Management
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="exportData('passport')">
+                                <i class="fas fa-download me-1"></i>Export
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus me-1"></i>New Record
+                            </a>
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">No queries submitted yet.</p>
-                    {% endif %}
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Passport No.</th>
+                                    <th>Nationality</th>
+                                    <th>Phone</th>
+                                    <th>Emergency Contact</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in recent_records %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ record.given_names }} {{ record.surname }}</div>
+                                        <small class="text-muted">{{ record.date_of_birth or 'DOB not provided' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ record.passport_number or 'N/A' }}</span>
+                                    </td>
+                                    <td>{{ record.nationality or 'N/A' }}</td>
+                                    <td>{{ record.phone_number or 'N/A' }}</td>
+                                    <td>{{ record.emergency_contact or 'N/A' }}</td>
+                                    <td>{{ record.created_at.strftime('%m/%d/%Y') }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('edit_record', record_id=record.id) }}" class="btn btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ url_for('create_job_offer', record_id=record.id) }}" class="btn btn-outline-success" title="Job Offer">
+                                                <i class="fas fa-briefcase"></i>
+                                            </a>
+                                            <button class="btn btn-outline-danger" onclick="deleteRecord({{ record.id }})" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                        No passport records found. <a href="{{ url_for('index') }}">Upload your first passport</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Employees Tab -->
+                <div class="tab-pane fade" id="employees-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users text-success me-2"></i>
+                            Employee Management
+                        </h5>
+                        <button class="btn btn-sm btn-success" onclick="addEmployee()">
+                            <i class="fas fa-user-plus me-1"></i>Add Employee
+                        </button>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Employee records are automatically created when passport holders are hired through job offers.
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Position</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-user-friends fa-2x mb-2"></i><br>
+                                        No employees registered yet. Employees are created when job offers are accepted.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Job Offers Tab -->
+                <div class="tab-pane fade" id="offers-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-briefcase text-warning me-2"></i>
+                            Job Offers Management
+                        </h5>
+                        <button class="btn btn-sm btn-warning" onclick="showCreateOffer()">
+                            <i class="fas fa-plus me-1"></i>Create Offer
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Position</th>
+                                    <th>Department</th>
+                                    <th>Salary</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-envelope-open fa-2x mb-2"></i><br>
+                                        No job offers created yet. Create offers from passport records.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- HR Queries Tab -->
+                <div class="tab-pane fade" id="queries-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-question-circle text-info me-2"></i>
+                            HR Query Management
+                        </h5>
+                        <a href="{{ url_for('submit_query') }}" class="btn btn-sm btn-info">
+                            <i class="fas fa-robot me-1"></i>Ask AI Assistant
+                        </a>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Contact</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for query in recent_queries %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ query.subject }}</div>
+                                        <small class="text-muted">{{ query.query_text[:50] }}...</small>
+                                    </td>
+                                    <td>{{ query.contact_name or 'Anonymous' }}<br><small>{{ query.contact_email or '' }}</small></td>
+                                    <td><span class="badge bg-secondary">{{ query.category or 'General' }}</span></td>
+                                    <td>
+                                        <span class="badge bg-{% if query.auto_resolved %}success{% elif query.status == 'open' %}warning{% else %}info{% endif %}">
+                                            {% if query.auto_resolved %}AI Resolved{% else %}{{ query.status.title() }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ query.submitted_at.strftime('%m/%d/%Y') }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewQuery({{ query.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-comments fa-2x mb-2"></i><br>
+                                        No HR queries submitted yet. <a href="{{ url_for('submit_query') }}">Try the AI assistant</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Leave Requests Tab -->
+                <div class="tab-pane fade" id="leaves-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-alt text-primary me-2"></i>
+                            Leave Request Management
+                        </h5>
+                        <button class="btn btn-sm btn-primary" onclick="showLeaveForm()">
+                            <i class="fas fa-calendar-plus me-1"></i>Request Leave
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>AI Recommendation</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leave in recent_leaves %}
+                                <tr>
+                                    <td>{{ leave.employee.employee_id if leave.employee else 'N/A' }}</td>
+                                    <td><span class="badge bg-info">{{ leave.leave_type }}</span></td>
+                                    <td>{{ leave.days_requested }} days<br><small>{{ leave.start_date }} to {{ leave.end_date }}</small></td>
+                                    <td>
+                                        <span class="badge bg-{% if leave.status == 'approved' %}success{% elif leave.status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                            {{ leave.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if leave.ai_recommendation %}
+                                            <span class="badge bg-secondary">{{ leave.ai_recommendation.title() }}</span>
+                                            <small class="d-block">{{ (leave.ai_confidence * 100)|round|int }}% confident</small>
+                                        {% else %}
+                                            <span class="text-muted">No AI analysis</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewLeave({{ leave.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-calendar-times fa-2x mb-2"></i><br>
+                                        No leave requests submitted yet.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -246,25 +515,96 @@
 
 {% block scripts %}
 <script>
-function generateReport() {
-    const modal = new bootstrap.Modal(document.getElementById('reportModal'));
-    modal.show();
-}
-
-function submitReport() {
-    const form = document.getElementById('reportForm');
-    const formData = new FormData(form);
-    
-    // Here you would typically send the form data to generate the report
-    alert('Report generation feature coming soon!');
-    
-    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
-    modal.hide();
-}
-
-// Auto-refresh dashboard every 30 seconds
-setInterval(function() {
+// Dashboard functionality
+function refreshDashboard() {
     location.reload();
-}, 30000);
+}
+
+function exportData(type) {
+    window.open(`/export/${type}`, '_blank');
+}
+
+function deleteRecord(recordId) {
+    if (confirm('Are you sure you want to delete this passport record?')) {
+        fetch(`/delete_record/${recordId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error deleting record');
+            }
+        });
+    }
+}
+
+function addEmployee() {
+    alert('Employee management feature - employees are automatically created from hired candidates');
+}
+
+function showCreateOffer() {
+    alert('Select a passport record to create a job offer');
+}
+
+function viewQuery(queryId) {
+    // Modal or detailed view for HR query
+    alert(`Viewing query ${queryId} - detailed view coming soon`);
+}
+
+function viewLeave(leaveId) {
+    // Modal or detailed view for leave request
+    alert(`Viewing leave request ${leaveId} - detailed view coming soon`);
+}
+
+function showLeaveForm() {
+    alert('Leave request form - requires employee registration first');
+}
+
+// Real-time updates
+function startRealTimeUpdates() {
+    setInterval(function() {
+        fetch('/api/dashboard-stats')
+            .then(response => response.json())
+            .then(data => {
+                // Update stats without full page reload
+                document.querySelector('.passport-count').textContent = data.passport_count;
+                document.querySelector('.employee-count').textContent = data.employee_count;
+                document.querySelector('.pending-leaves').textContent = data.pending_leaves;
+                document.querySelector('.open-queries').textContent = data.open_queries;
+            })
+            .catch(error => console.log('Stats update failed:', error));
+    }, 30000);
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // startRealTimeUpdates();
+    
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Search functionality
+function searchRecords() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const tables = document.querySelectorAll('.table tbody tr');
+    
+    tables.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+}
+
+// Table sorting
+function sortTable(column, table) {
+    // Basic table sorting functionality
+    console.log(`Sorting ${table} by ${column}`);
+}
 </script>
 {% endblock %}

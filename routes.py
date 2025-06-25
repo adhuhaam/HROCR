@@ -223,26 +223,93 @@ def ai_enhance_record(record_id):
 
 @app.route('/hr_dashboard')
 def hr_dashboard():
-    """HR management dashboard"""
-    # Get summary statistics
-    total_records = PassportRecord.query.count()
-    total_employees = Employee.query.count()
-    pending_leaves = LeaveRequest.query.filter_by(status='pending').count()
-    open_queries = HRQuery.query.filter_by(status='open').count()
-    
-    # Recent activities
-    recent_records = PassportRecord.query.order_by(PassportRecord.created_at.desc()).limit(5).all()
-    recent_leaves = LeaveRequest.query.order_by(LeaveRequest.submitted_at.desc()).limit(5).all()
-    recent_queries = HRQuery.query.order_by(HRQuery.submitted_at.desc()).limit(5).all()
-    
-    return render_template('hr_dashboard.html',
-                         total_records=total_records,
-                         total_employees=total_employees,
-                         pending_leaves=pending_leaves,
-                         open_queries=open_queries,
-                         recent_records=recent_records,
-                         recent_leaves=recent_leaves,
-                         recent_queries=recent_queries)
+    """Enhanced HR management dashboard with full CRUD"""
+    try:
+        # Get summary statistics
+        total_records = PassportRecord.query.count()
+        total_employees = Employee.query.count()
+        pending_leaves = LeaveRequest.query.filter_by(status='pending').count()
+        open_queries = HRQuery.query.filter_by(status='open').count()
+        
+        # Get all records for CRUD operations (limit for performance)
+        recent_records = PassportRecord.query.order_by(PassportRecord.created_at.desc()).limit(20).all()
+        recent_leaves = LeaveRequest.query.order_by(LeaveRequest.submitted_at.desc()).limit(10).all()
+        recent_queries = HRQuery.query.order_by(HRQuery.submitted_at.desc()).limit(10).all()
+        
+        return render_template('hr_dashboard.html',
+                             total_records=total_records,
+                             total_employees=total_employees,
+                             pending_leaves=pending_leaves,
+                             open_queries=open_queries,
+                             recent_records=recent_records,
+                             recent_leaves=recent_leaves,
+                             recent_queries=recent_queries)
+    except Exception as e:
+        flash(f'Dashboard error: {str(e)}', 'error')
+        return render_template('hr_dashboard.html',
+                             total_records=0,
+                             total_employees=0,
+                             pending_leaves=0,
+                             open_queries=0,
+                             recent_records=[],
+                             recent_leaves=[],
+                             recent_queries=[])
+
+@app.route('/api/dashboard-stats')
+def dashboard_stats():
+    """API endpoint for real-time dashboard statistics"""
+    try:
+        stats = {
+            'passport_count': PassportRecord.query.count(),
+            'employee_count': Employee.query.count(),
+            'pending_leaves': LeaveRequest.query.filter_by(status='pending').count(),
+            'open_queries': HRQuery.query.filter_by(status='open').count()
+        }
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/export/<data_type>')
+def export_data(data_type):
+    """Export data in CSV format"""
+    try:
+        if data_type == 'passport':
+            records = PassportRecord.query.all()
+            
+            # Create CSV content
+            import io
+            import csv
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # Headers
+            writer.writerow(['ID', 'Name', 'Passport Number', 'Nationality', 'Date of Birth', 
+                           'Phone', 'Emergency Contact', 'Created Date'])
+            
+            # Data rows
+            for record in records:
+                writer.writerow([
+                    record.id,
+                    f"{record.given_names} {record.surname}",
+                    record.passport_number or '',
+                    record.nationality or '',
+                    record.date_of_birth or '',
+                    record.phone_number or '',
+                    record.emergency_contact or '',
+                    record.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                ])
+            
+            # Create response
+            response = make_response(output.getvalue())
+            response.headers['Content-Type'] = 'text/csv'
+            response.headers['Content-Disposition'] = f'attachment; filename=passport_records_{datetime.now().strftime("%Y%m%d")}.csv'
+            
+            return response
+        else:
+            return jsonify({'error': 'Invalid export type'}), 400
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/create_job_offer/<int:record_id>', methods=['GET', 'POST'])
 def create_job_offer(record_id):
