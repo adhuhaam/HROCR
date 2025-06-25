@@ -34,6 +34,7 @@
                                 <th>Date of Birth</th>
                                 <th>Expiry Date</th>
                                 <th>Processed</th>
+                                <th>Emergency Contact</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -96,6 +97,16 @@
                                     <small class="text-muted">{{ record.created_at }}</small>
                                 </td>
                                 <td>
+                                    {% if record.emergency_contact %}
+                                        <div class="fw-bold">{{ record.emergency_contact }}</div>
+                                        {% if record.phone_number %}
+                                            <small class="text-muted">{{ record.phone_number }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     <div class="btn-group" role="group">
                                         <button type="button" class="btn btn-outline-info btn-sm" 
                                                 onclick="viewDetails({{ record.id }}, '{{ record.filename }}', '{{ record.raw_text|replace("'", "\\'") if record.raw_text else '' }}')"
@@ -109,6 +120,10 @@
                                         <a href="{{ url_for('generate_document', record_id=record.id) }}" 
                                            class="btn btn-outline-success btn-sm" title="Generate Document" target="_blank">
                                             <i class="fas fa-file-contract"></i>
+                                        </a>
+                                        <a href="{{ url_for('ai_enhance_record', record_id=record.id) }}" 
+                                           class="btn btn-outline-info btn-sm" title="AI Enhance">
+                                            <i class="fas fa-robot"></i>
                                         </a>
                                         <form method="post" action="{{ url_for('delete_record', record_id=record.id) }}" 
                                               style="display: inline;" 

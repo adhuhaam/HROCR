@@ -43,54 +43,14 @@ class OCRProcessor:
             # Enhance image for better OCR results
             enhanced_image = self._enhance_image(image)
             
-            # Try multiple Tesseract configurations for better results
-            configs = [
-                r'--oem 3 --psm 6',  # Uniform block of text
-                r'--oem 3 --psm 8',  # Single word
-                r'--oem 3 --psm 4',  # Single column
-                r'--oem 3 --psm 3',  # Fully automatic page segmentation
-            ]
+            # Use optimized Tesseract configuration for passport documents
+            config = r'--oem 3 --psm 3 -c preserve_interword_spaces=1'
             
-            best_text = ""
-            max_confidence = 0
+            # Extract text using optimized Tesseract
+            text = pytesseract.image_to_string(enhanced_image, config=config, lang='eng')
             
-            for config in configs:
-                try:
-                    # Get text with confidence data
-                    data = pytesseract.image_to_data(enhanced_image, config=config, output_type=pytesseract.Output.DICT)
-                    
-                    # Filter out low confidence words and build text
-                    text_parts = []
-                    total_conf = 0
-                    word_count = 0
-                    
-                    for i, conf in enumerate(data['conf']):
-                        if int(conf) > 30:  # Only include words with confidence > 30
-                            word = data['text'][i].strip()
-                            if word:
-                                text_parts.append(word)
-                                total_conf += int(conf)
-                                word_count += 1
-                    
-                    if word_count > 0:
-                        avg_confidence = total_conf / word_count
-                        current_text = ' '.join(text_parts)
-                        
-                        if avg_confidence > max_confidence and len(current_text) > len(best_text):
-                            max_confidence = avg_confidence
-                            best_text = current_text
-                            
-                except Exception as e:
-                    logger.warning(f"Config {config} failed: {str(e)}")
-                    continue
-            
-            # If no good result, fallback to simple extraction
-            if not best_text.strip():
-                config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789<>/.-'
-                best_text = pytesseract.image_to_string(enhanced_image, config=config)
-            
-            logger.debug(f"Best OCR result (confidence: {max_confidence:.1f}): {best_text[:100]}...")
-            return best_text.strip()
+            logger.debug(f"Tesseract OCR result: {text[:200]}...")
+            return text.strip()
             
         except Exception as e:
             logger.error(f"Error processing image {image_path}: {str(e)}")
@@ -170,24 +130,48 @@ class OCRProcessor:
             raise
     
     def _enhance_image(self, image):
-        """Enhance image for better OCR results"""
+        """Enhance image for better OCR results with advanced preprocessing"""
         try:
-            from PIL import ImageEnhance, ImageFilter
+            from PIL import ImageEnhance, ImageFilter, ImageOps
+            import numpy as np
+            
+            # Resize image if too small (minimum 300 DPI equivalent)
+            width, height = image.size
+            if width < 1200 or height < 800:
+                scale_factor = max(1200 / width, 800 / height)
+                new_size = (int(width * scale_factor), int(height * scale_factor))
+                image = image.resize(new_size, Image.LANCZOS)
             
             # Convert to grayscale
             if image.mode != 'L':
                 image = image.convert('L')
             
-            # Enhance contrast
+            # Apply Gaussian blur to reduce noise
+            image = image.filter(ImageFilter.GaussianBlur(radius=0.5))
+            
+            # Enhance contrast more aggressively
             enhancer = ImageEnhance.Contrast(image)
-            image = enhancer.enhance(2.0)
+            image = enhancer.enhance(2.5)
             
-            # Enhance sharpness
+            # Auto-level (histogram equalization)
+            image = ImageOps.autocontrast(image, cutoff=2)
+            
+            # Sharpen the image
             enhancer = ImageEnhance.Sharpness(image)
-            image = enhancer.enhance(2.0)
+            image = enhancer.enhance(1.5)
             
-            # Apply slight blur to reduce noise
-            image = image.filter(ImageFilter.SMOOTH_MORE)
+            # Apply unsharp mask filter for better text clarity
+            image = image.filter(ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3))
+            
+            # Convert to numpy array for morphological operations
+            img_array = np.array(image)
+            
+            # Apply threshold to create binary image
+            threshold = np.percentile(img_array, 60)  # Adaptive threshold
+            img_array = np.where(img_array > threshold, 255, 0).astype(np.uint8)
+            
+            # Convert back to PIL Image
+            image = Image.fromarray(img_array, mode='L')
             
             return image
             

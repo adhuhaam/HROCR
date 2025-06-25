@@ -17,6 +17,11 @@ class PassportRecord(db.Model):
     date_of_expiry = db.Column(db.String(20))
     issuing_authority = db.Column(db.String(100))
     
+    # Additional fields requested
+    emergency_contact = db.Column(db.String(200))
+    phone_number = db.Column(db.String(50))
+    previous_passport = db.Column(db.String(50))
+    
     # Metadata
     raw_text = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -39,6 +44,9 @@ class PassportRecord(db.Model):
             'date_of_issue': self.date_of_issue,
             'date_of_expiry': self.date_of_expiry,
             'issuing_authority': self.issuing_authority,
+            'emergency_contact': self.emergency_contact,
+            'phone_number': self.phone_number,
+            'previous_passport': self.previous_passport,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'processing_status': self.processing_status
         }
