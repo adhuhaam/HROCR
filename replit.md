@@ -102,9 +102,12 @@ This is a Flask-based web application that provides Optical Character Recognitio
 
 ## Changelog
 - June 25, 2025: Initial setup with basic OCR functionality
-- June 25, 2025: Upgraded to EasyOCR for better text extraction accuracy
-- June 25, 2025: Added record editing functionality with modal forms
-- June 25, 2025: Added document generation feature (job offer letters)
+- June 25, 2025: Enhanced Tesseract OCR with advanced image preprocessing
+- June 25, 2025: Added comprehensive passport data extraction patterns
+- June 25, 2025: Added record editing functionality with all requested fields
+- June 25, 2025: Integrated OpenAI GPT-4o for AI-powered data enhancement
+- June 25, 2025: Added AI validation and document generation features
+- June 25, 2025: Extended database model with emergency contact, phone, previous passport fields
 
 ## User Preferences
 
