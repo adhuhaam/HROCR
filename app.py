@@ -35,6 +35,7 @@ db.init_app(app)
 with app.app_context():
     # Import models to ensure tables are created
     import models
+    import models_hr
     db.create_all()
 
 # Import routes

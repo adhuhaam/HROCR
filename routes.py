@@ -1,11 +1,15 @@
 import os
 from flask import render_template, request, flash, redirect, url_for, jsonify, send_file, make_response
+import json
+from datetime import datetime
 from werkzeug.utils import secure_filename
 from app import app, db
 from models import PassportRecord
+from models_hr import Employee, LeaveRequest, HRQuery, JobOffer
 from ocr_processor import OCRProcessor
 from passport_parser import PassportParser
 from openai_automation import OpenAIAutomation
+from hr_automation import HRAutomation
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
@@ -216,6 +220,169 @@ def ai_enhance_record(record_id):
         flash(f'AI enhancement failed: {str(e)}', 'error')
     
     return redirect(url_for('edit_record', record_id=record_id))
+
+@app.route('/hr_dashboard')
+def hr_dashboard():
+    """HR management dashboard"""
+    # Get summary statistics
+    total_records = PassportRecord.query.count()
+    total_employees = Employee.query.count()
+    pending_leaves = LeaveRequest.query.filter_by(status='pending').count()
+    open_queries = HRQuery.query.filter_by(status='open').count()
+    
+    # Recent activities
+    recent_records = PassportRecord.query.order_by(PassportRecord.created_at.desc()).limit(5).all()
+    recent_leaves = LeaveRequest.query.order_by(LeaveRequest.submitted_at.desc()).limit(5).all()
+    recent_queries = HRQuery.query.order_by(HRQuery.submitted_at.desc()).limit(5).all()
+    
+    return render_template('hr_dashboard.html',
+                         total_records=total_records,
+                         total_employees=total_employees,
+                         pending_leaves=pending_leaves,
+                         open_queries=open_queries,
+                         recent_records=recent_records,
+                         recent_leaves=recent_leaves,
+                         recent_queries=recent_queries)
+
+@app.route('/create_job_offer/<int:record_id>', methods=['GET', 'POST'])
+def create_job_offer(record_id):
+    """Create and send job offer based on passport record"""
+    record = PassportRecord.query.get_or_404(record_id)
+    
+    if request.method == 'POST':
+        # Create job offer
+        offer = JobOffer(
+            passport_record_id=record_id,
+            position_title=request.form.get('position_title'),
+            department=request.form.get('department'),
+            salary_offered=float(request.form.get('salary_offered', 0)),
+            start_date=datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date(),
+            employment_type=request.form.get('employment_type'),
+            candidate_email=request.form.get('candidate_email'),
+            status='draft'
+        )
+        
+        db.session.add(offer)
+        db.session.commit()
+        
+        # Auto-send if requested
+        if request.form.get('send_email'):
+            hr_automation = HRAutomation()
+            result = hr_automation.send_offer_letter_email(record, {
+                'position': offer.position_title,
+                'department': offer.department,
+                'salary': str(offer.salary_offered),
+                'start_date': offer.start_date.strftime('%Y-%m-%d'),
+                'email': offer.candidate_email
+            })
+            
+            if result['success']:
+                offer.email_sent = True
+                offer.email_sent_at = datetime.utcnow()
+                offer.status = 'sent'
+                db.session.commit()
+                flash('Job offer created and emailed successfully!', 'success')
+            else:
+                flash(f'Job offer created but email failed: {result["error"]}', 'warning')
+        else:
+            flash('Job offer created successfully!', 'success')
+        
+        return redirect(url_for('hr_dashboard'))
+    
+    return render_template('create_job_offer.html', record=record)
+
+@app.route('/submit_query', methods=['GET', 'POST'])
+def submit_query():
+    """Submit HR query with AI auto-response"""
+    if request.method == 'POST':
+        # Create HR query
+        query = HRQuery(
+            subject=request.form.get('subject'),
+            query_text=request.form.get('query_text'),
+            category=request.form.get('category'),
+            priority=request.form.get('priority', 'medium'),
+            contact_email=request.form.get('contact_email'),
+            contact_name=request.form.get('contact_name')
+        )
+        
+        # Try to auto-respond with AI
+        hr_automation = HRAutomation()
+        ai_response = hr_automation.process_query_response(query.query_text, query.category)
+        
+        if ai_response and ai_response != "AI query processing requires OpenAI API key":
+            query.ai_response = ai_response
+            query.auto_resolved = True
+            query.status = 'resolved'
+            query.responded_at = datetime.utcnow()
+            query.resolved_at = datetime.utcnow()
+            flash('Your query has been automatically processed with AI assistance!', 'success')
+        else:
+            flash('Your query has been submitted and will be reviewed by HR staff.', 'info')
+        
+        db.session.add(query)
+        db.session.commit()
+        
+        return redirect(url_for('hr_dashboard'))
+    
+    return render_template('submit_query.html')
+
+@app.route('/leave_request/<int:employee_id>', methods=['GET', 'POST'])
+def leave_request(employee_id):
+    """Submit leave request with AI evaluation"""
+    employee = Employee.query.get_or_404(employee_id)
+    
+    if request.method == 'POST':
+        start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
+        end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
+        days_requested = (end_date - start_date).days + 1
+        
+        # Create leave request
+        leave_req = LeaveRequest(
+            employee_id=employee_id,
+            leave_type=request.form.get('leave_type'),
+            start_date=start_date,
+            end_date=end_date,
+            days_requested=days_requested,
+            reason=request.form.get('reason'),
+            employee_comments=request.form.get('comments')
+        )
+        
+        # AI evaluation
+        hr_automation = HRAutomation()
+        evaluation = hr_automation.evaluate_leave_request(
+            employee.to_dict(),
+            {
+                'type': leave_req.leave_type,
+                'start_date': leave_req.start_date.strftime('%Y-%m-%d'),
+                'end_date': leave_req.end_date.strftime('%Y-%m-%d'),
+                'duration': days_requested,
+                'reason': leave_req.reason,
+                'notice_days': (start_date - datetime.now().date()).days
+            }
+        )
+        
+        if evaluation.get('recommendation'):
+            leave_req.ai_recommendation = evaluation['recommendation']
+            leave_req.ai_confidence = evaluation.get('confidence', 0.0)
+            leave_req.ai_analysis = json.dumps(evaluation)
+            
+            # Auto-approve if high confidence and recommended
+            if (evaluation['recommendation'] == 'approve' and 
+                evaluation.get('confidence', 0) > 0.8):
+                leave_req.manager_approval = 'approved'
+                leave_req.hr_approval = 'approved'
+                leave_req.status = 'approved'
+                leave_req.final_decision_at = datetime.utcnow()
+                flash('Your leave request has been automatically approved!', 'success')
+            else:
+                flash('Your leave request has been submitted for review.', 'info')
+        
+        db.session.add(leave_req)
+        db.session.commit()
+        
+        return redirect(url_for('hr_dashboard'))
+    
+    return render_template('leave_request.html', employee=employee)
 
 @app.route('/generate_document/<int:record_id>')
 def generate_document(record_id):

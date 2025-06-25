@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}HR Dashboard - Passport OCR System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6 fw-bold">
+                <i class="fas fa-users me-3"></i>
+                HR Management Dashboard
+            </h1>
+            <p class="text-muted">Automated recruitment, leave management, and query handling</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-passport fa-2x mb-2"></i>
+                    <h3>{{ total_records }}</h3>
+                    <p class="mb-0">Passport Records</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-tie fa-2x mb-2"></i>
+                    <h3>{{ total_employees }}</h3>
+                    <p class="mb-0">Employees</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                    <h3>{{ pending_leaves }}</h3>
+                    <p class="mb-0">Pending Leave Requests</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-question-circle fa-2x mb-2"></i>
+                    <h3>{{ open_queries }}</h3>
+                    <p class="mb-0">Open HR Queries</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-upload me-2"></i>
+                                Process New Passport
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('submit_query') }}" class="btn btn-outline-success btn-lg w-100">
+                                <i class="fas fa-robot me-2"></i>
+                                AI Query Assistant
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <button class="btn btn-outline-info btn-lg w-100" onclick="generateReport()">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Generate HR Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <!-- Recent Passport Records -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-passport me-2"></i>
+                        Recent Passport Records
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_records %}
+                        {% for record in recent_records %}
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <div class="fw-bold">{{ record.given_names }} {{ record.surname }}</div>
+                                <small class="text-muted">{{ record.passport_number or 'No passport number' }}</small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">{{ record.created_at.strftime('%m/%d') }}</small>
+                                <div>
+                                    <a href="{{ url_for('create_job_offer', record_id=record.id) }}" 
+                                       class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-briefcase"></i> Offer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No passport records yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Queries -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Recent HR Queries
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_queries %}
+                        {% for query in recent_queries %}
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <div class="fw-bold">{{ query.subject }}</div>
+                                <small class="text-muted">{{ query.contact_name or 'Anonymous' }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-{% if query.auto_resolved %}success{% elif query.status == 'open' %}warning{% else %}info{% endif %}">
+                                    {% if query.auto_resolved %}AI Resolved{% else %}{{ query.status.title() }}{% endif %}
+                                </span>
+                                <div>
+                                    <small class="text-muted">{{ query.submitted_at.strftime('%m/%d') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No queries submitted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Automation Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>
+                        AI Automation Status
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-magic fa-2x text-primary mb-2"></i>
+                                <h6>Data Enhancement</h6>
+                                <p class="text-muted small">AI improves OCR accuracy automatically</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-envelope fa-2x text-success mb-2"></i>
+                                <h6>Auto Email</h6>
+                                <p class="text-muted small">Job offers sent automatically</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-calendar-check fa-2x text-info mb-2"></i>
+                                <h6>Leave AI</h6>
+                                <p class="text-muted small">Smart leave request evaluation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Generation Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate HR Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Report Type</label>
+                        <select class="form-select" name="report_type" required>
+                            <option value="">Select report type...</option>
+                            <option value="recruitment_summary">Recruitment Summary</option>
+                            <option value="leave_analysis">Leave Analysis</option>
+                            <option value="query_statistics">Query Statistics</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date Range</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="date" class="form-control" name="start_date" required>
+                            </div>
+                            <div class="col-6">
+                                <input type="date" class="form-control" name="end_date" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReport()">Generate Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function generateReport() {
+    const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+    modal.show();
+}
+
+function submitReport() {
+    const form = document.getElementById('reportForm');
+    const formData = new FormData(form);
+    
+    // Here you would typically send the form data to generate the report
+    alert('Report generation feature coming soon!');
+    
+    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+    modal.hide();
+}
+
+// Auto-refresh dashboard every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Submit HR Query - Passport OCR System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold">
+                    <i class="fas fa-robot me-3"></i>
+                    AI HR Assistant
+                </h1>
+                <p class="lead text-muted">
+                    Get instant answers to your HR questions with AI-powered assistance
+                </p>
+            </div>
+
+            <!-- Query Form -->
+            <div class="card shadow-lg">
+                <div class="card-body p-4">
+                    <form method="post" action="{{ url_for('submit_query') }}">
+                        <div class="row">
+                            <!-- Contact Information -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-user me-2"></i>
+                                    Contact Information
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contact_name" class="form-label">Your Name</label>
+                                        <input type="text" class="form-control" id="contact_name" name="contact_name" 
+                                               placeholder="Enter your full name" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contact_email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="contact_email" name="contact_email" 
+                                               placeholder="Enter your email" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Query Details -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-question-circle me-2"></i>
+                                    Your Question
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="category" class="form-label">Category</label>
+                                        <select class="form-select" id="category" name="category" required>
+                                            <option value="">Select category...</option>
+                                            <option value="leave">Leave & Time Off</option>
+                                            <option value="payroll">Payroll & Benefits</option>
+                                            <option value="policy">Company Policies</option>
+                                            <option value="recruitment">Recruitment & Hiring</option>
+                                            <option value="performance">Performance Management</option>
+                                            <option value="training">Training & Development</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="priority" class="form-label">Priority</label>
+                                        <select class="form-select" id="priority" name="priority">
+                                            <option value="low">Low</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-12 mb-3">
+                                        <label for="subject" class="form-label">Subject</label>
+                                        <input type="text" class="form-control" id="subject" name="subject" 
+                                               placeholder="Brief summary of your question" required>
+                                    </div>
+                                    
+                                    <div class="col-12 mb-3">
+                                        <label for="query_text" class="form-label">Detailed Question</label>
+                                        <textarea class="form-control" id="query_text" name="query_text" rows="6" 
+                                                  placeholder="Please provide as much detail as possible about your question..." required></textarea>
+                                        <div class="form-text">
+                                            <i class="fas fa-lightbulb me-1"></i>
+                                            Our AI assistant will try to provide an immediate response to common HR questions.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Submit Query
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- AI Features -->
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-bolt fa-3x text-primary mb-3"></i>
+                            <h5>Instant Responses</h5>
+                            <p class="text-muted">Get immediate answers to common HR questions powered by AI</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-brain fa-3x text-success mb-3"></i>
+                            <h5>Smart Analysis</h5>
+                            <p class="text-muted">AI understands context and provides relevant policy information</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-users fa-3x text-info mb-3"></i>
+                            <h5>Human Backup</h5>
+                            <p class="text-muted">Complex queries are escalated to HR staff for personal attention</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Common Questions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-question me-2"></i>
+                        Common Questions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <button class="btn btn-link p-0 text-start" onclick="fillQuestion('How do I request annual leave?')">
+                                        How do I request annual leave?
+                                    </button>
+                                </li>
+                                <li class="mb-2">
+                                    <button class="btn btn-link p-0 text-start" onclick="fillQuestion('What are the company benefits?')">
+                                        What are the company benefits?
+                                    </button>
+                                </li>
+                                <li class="mb-2">
+                                    <button class="btn btn-link p-0 text-start" onclick="fillQuestion('How to update my personal information?')">
+                                        How to update my personal information?
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <button class="btn btn-link p-0 text-start" onclick="fillQuestion('What is the remote work policy?')">
+                                        What is the remote work policy?
+                                    </button>
+                                </li>
+                                <li class="mb-2">
+                                    <button class="btn btn-link p-0 text-start" onclick="fillQuestion('How do performance reviews work?')">
+                                        How do performance reviews work?
+                                    </button>
+                                </li>
+                                <li class="mb-2">
+                                    <button class="btn btn-link p-0 text-start" onclick="fillQuestion('What training opportunities are available?')">
+                                        What training opportunities are available?
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillQuestion(question) {
+    document.getElementById('subject').value = question;
+    document.getElementById('query_text').value = question + '\n\nPlease provide detailed information about this topic.';
+    
+    // Auto-select appropriate category
+    const categorySelect = document.getElementById('category');
+    if (question.includes('leave')) {
+        categorySelect.value = 'leave';
+    } else if (question.includes('benefits')) {
+        categorySelect.value = 'payroll';
+    } else if (question.includes('policy') || question.includes('remote')) {
+        categorySelect.value = 'policy';
+    } else if (question.includes('performance')) {
+        categorySelect.value = 'performance';
+    } else if (question.includes('training')) {
+        categorySelect.value = 'training';
+    }
+    
+    // Scroll to form
+    document.getElementById('subject').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+{% endblock %}

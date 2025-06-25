@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Create Job Offer - Passport OCR System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        <i class="fas fa-briefcase me-3"></i>
+                        Create Job Offer
+                    </h1>
+                    <p class="text-muted">Generate and send automated job offer letter</p>
+                </div>
+                <a href="{{ url_for('hr_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Candidate Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Candidate Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Name:</strong> {{ record.given_names }} {{ record.surname }}<br>
+                            <strong>Passport:</strong> {{ record.passport_number or 'N/A' }}<br>
+                            <strong>Nationality:</strong> {{ record.nationality or 'N/A' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Date of Birth:</strong> {{ record.date_of_birth or 'N/A' }}<br>
+                            <strong>Emergency Contact:</strong> {{ record.emergency_contact or 'N/A' }}<br>
+                            <strong>Phone:</strong> {{ record.phone_number or 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Offer Form -->
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <form method="post" action="{{ url_for('create_job_offer', record_id=record.id) }}">
+                        <div class="row">
+                            <!-- Position Details -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-briefcase me-2"></i>
+                                    Position Details
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="position_title" class="form-label">Position Title</label>
+                                        <input type="text" class="form-control" id="position_title" name="position_title" 
+                                               placeholder="e.g., Software Engineer" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="department" class="form-label">Department</label>
+                                        <select class="form-select" id="department" name="department" required>
+                                            <option value="">Select department...</option>
+                                            <option value="Engineering">Engineering</option>
+                                            <option value="Marketing">Marketing</option>
+                                            <option value="Sales">Sales</option>
+                                            <option value="HR">Human Resources</option>
+                                            <option value="Finance">Finance</option>
+                                            <option value="Operations">Operations</option>
+                                            <option value="Customer Service">Customer Service</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="employment_type" class="form-label">Employment Type</label>
+                                        <select class="form-select" id="employment_type" name="employment_type" required>
+                                            <option value="">Select type...</option>
+                                            <option value="Full-time">Full-time</option>
+                                            <option value="Part-time">Part-time</option>
+                                            <option value="Contract">Contract</option>
+                                            <option value="Internship">Internship</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="start_date" class="form-label">Proposed Start Date</label>
+                                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Compensation -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-dollar-sign me-2"></i>
+                                    Compensation
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="salary_offered" class="form-label">Annual Salary</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="salary_offered" name="salary_offered" 
+                                                   placeholder="60000" step="1000" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Contact Information -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    Communication
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="candidate_email" class="form-label">Candidate Email</label>
+                                        <input type="email" class="form-control" id="candidate_email" name="candidate_email" 
+                                               placeholder="candidate@email.com" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="checkbox" id="send_email" name="send_email" value="1" checked>
+                                            <label class="form-check-label" for="send_email">
+                                                <strong>Send offer letter automatically via email</strong>
+                                            </label>
+                                            <div class="form-text">
+                                                <i class="fas fa-robot me-1"></i>
+                                                AI will generate a personalized offer letter and send it immediately
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Preview -->
+                            <div class="col-12 mb-4">
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-magic me-2"></i>
+                                        AI-Powered Offer Generation
+                                    </h6>
+                                    <p class="mb-0">
+                                        Our AI will automatically create a professional job offer letter using the candidate's 
+                                        passport information and the details you provide. The letter will include:
+                                    </p>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Personalized greeting using verified passport name</li>
+                                        <li>Position details and compensation</li>
+                                        <li>Professional formatting and company branding</li>
+                                        <li>Next steps and acceptance instructions</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('hr_dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Cancel
+                            </a>
+                            
+                            <div>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Create & Send Offer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set default start date to 2 weeks from now
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('start_date');
+    const twoWeeksFromNow = new Date();
+    twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
+    startDateInput.value = twoWeeksFromNow.toISOString().split('T')[0];
+});
+
+// Auto-format salary input
+document.getElementById('salary_offered').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/,/g, '');
+    if (!isNaN(value) && value !== '') {
+        e.target.value = parseInt(value).toLocaleString();
+    }
+});
+</script>
+{% endblock %}

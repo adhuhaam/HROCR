@@ -108,6 +108,9 @@ This is a Flask-based web application that provides Optical Character Recognitio
 - June 25, 2025: Integrated OpenAI GPT-4o for AI-powered data enhancement
 - June 25, 2025: Added AI validation and document generation features
 - June 25, 2025: Extended database model with emergency contact, phone, previous passport fields
+- June 25, 2025: Expanded into full HR management system with automated workflows
+- June 25, 2025: Added automated email job offers, AI query responses, and leave management
+- June 25, 2025: Implemented HR dashboard with employee management and reporting features
 
 ## User Preferences
 
