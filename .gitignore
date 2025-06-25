@@ -1,0 +1,83 @@
+# Environment variables
+.env
+.env.local
+.replit
+
+# Database
+instance/
+*.db
+*.sqlite
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Uploads (keep structure, ignore files)
+uploads/*
+!uploads/.gitkeep
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package files
+*.egg-info/
+dist/
+build/
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+
+# Documentation builds
+docs/_build/
+
+# Jupyter notebooks
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# Secrets and keys
+*.pem
+*.key
+!*.pub
+
+# Backup files
+*.bak
+*.backup
+
+# Node modules (if any)
+node_modules/
+
+# Lock files
+Pipfile.lock
+poetry.lock
