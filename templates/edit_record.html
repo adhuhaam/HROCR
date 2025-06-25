@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Record - Passport OCR System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6 fw-bold">
+                <i class="fas fa-edit me-3"></i>
+                Edit Passport Record
+            </h1>
+            <p class="text-muted">Update extracted passport information</p>
+        </div>
+        <a href="{{ url_for('records') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Back to Records
+        </a>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <form method="post" action="{{ url_for('edit_record', record_id=record.id) }}">
+                        <div class="row">
+                            <!-- Document Info -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-file me-2"></i>
+                                    Document Information
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Original Filename</label>
+                                    <div class="form-control-plaintext bg-light p-2 rounded">
+                                        <i class="fas fa-{% if record.filename.endswith('.pdf') %}file-pdf{% else %}image{% endif %} me-2"></i>
+                                        {{ record.filename }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Personal Information -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-user me-2"></i>
+                                    Personal Information
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="passport_number" class="form-label">Passport Number</label>
+                                        <input type="text" class="form-control" id="passport_number" name="passport_number" 
+                                               value="{{ record.passport_number or '' }}" placeholder="Enter passport number">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nationality" class="form-label">Nationality</label>
+                                        <input type="text" class="form-control" id="nationality" name="nationality" 
+                                               value="{{ record.nationality or '' }}" placeholder="Enter nationality">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="surname" class="form-label">Surname/Family Name</label>
+                                        <input type="text" class="form-control" id="surname" name="surname" 
+                                               value="{{ record.surname or '' }}" placeholder="Enter surname">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="given_names" class="form-label">Given Names</label>
+                                        <input type="text" class="form-control" id="given_names" name="given_names" 
+                                               value="{{ record.given_names or '' }}" placeholder="Enter given names">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                                        <input type="text" class="form-control" id="date_of_birth" name="date_of_birth" 
+                                               value="{{ record.date_of_birth or '' }}" placeholder="DD/MM/YYYY">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="sex" class="form-label">Sex</label>
+                                        <select class="form-select" id="sex" name="sex">
+                                            <option value="">Select...</option>
+                                            <option value="M" {% if record.sex == 'M' %}selected{% endif %}>Male</option>
+                                            <option value="F" {% if record.sex == 'F' %}selected{% endif %}>Female</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-12 mb-3">
+                                        <label for="place_of_birth" class="form-label">Place of Birth</label>
+                                        <input type="text" class="form-control" id="place_of_birth" name="place_of_birth" 
+                                               value="{{ record.place_of_birth or '' }}" placeholder="Enter place of birth">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Document Details -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Document Details
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="date_of_issue" class="form-label">Date of Issue</label>
+                                        <input type="text" class="form-control" id="date_of_issue" name="date_of_issue" 
+                                               value="{{ record.date_of_issue or '' }}" placeholder="DD/MM/YYYY">
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="date_of_expiry" class="form-label">Date of Expiry</label>
+                                        <input type="text" class="form-control" id="date_of_expiry" name="date_of_expiry" 
+                                               value="{{ record.date_of_expiry or '' }}" placeholder="DD/MM/YYYY">
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="issuing_authority" class="form-label">Issuing Authority</label>
+                                        <input type="text" class="form-control" id="issuing_authority" name="issuing_authority" 
+                                               value="{{ record.issuing_authority or '' }}" placeholder="Enter issuing authority">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Raw Text Display -->
+                            <div class="col-12 mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    Raw Extracted Text
+                                </h5>
+                                
+                                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto; background-color: var(--bs-secondary-bg);">
+                                    <pre class="mb-0 small">{{ record.raw_text or 'No text extracted' }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <a href="{{ url_for('generate_document', record_id=record.id) }}" 
+                                   class="btn btn-info" target="_blank">
+                                    <i class="fas fa-file-contract me-2"></i>
+                                    Generate Job Offer Letter
+                                </a>
+                            </div>
+                            
+                            <div>
+                                <a href="{{ url_for('records') }}" class="btn btn-secondary me-2">
+                                    <i class="fas fa-times me-2"></i>
+                                    Cancel
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-2"></i>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-format date inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInputs = ['date_of_birth', 'date_of_issue', 'date_of_expiry'];
+    
+    dateInputs.forEach(function(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2);
+                }
+                if (value.length >= 5) {
+                    value = value.substring(0, 5) + '/' + value.substring(5, 9);
+                }
+                e.target.value = value;
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

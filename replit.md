@@ -101,7 +101,10 @@ This is a Flask-based web application that provides Optical Character Recognitio
 - Automated deployment via Replit
 
 ## Changelog
-- June 25, 2025. Initial setup
+- June 25, 2025: Initial setup with basic OCR functionality
+- June 25, 2025: Upgraded to EasyOCR for better text extraction accuracy
+- June 25, 2025: Added record editing functionality with modal forms
+- June 25, 2025: Added document generation feature (job offer letters)
 
 ## User Preferences
 

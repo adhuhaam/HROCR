@@ -31,7 +31,7 @@ class OCRProcessor:
             raise
     
     def _process_image(self, image_path):
-        """Extract text from image using Tesseract OCR"""
+        """Extract text from image using enhanced Tesseract OCR"""
         try:
             # Open and preprocess image
             image = Image.open(image_path)
@@ -41,15 +41,56 @@ class OCRProcessor:
                 image = image.convert('RGB')
             
             # Enhance image for better OCR results
-            image = self._enhance_image(image)
+            enhanced_image = self._enhance_image(image)
             
-            # Configure Tesseract for passport documents
-            custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789<>/'
+            # Try multiple Tesseract configurations for better results
+            configs = [
+                r'--oem 3 --psm 6',  # Uniform block of text
+                r'--oem 3 --psm 8',  # Single word
+                r'--oem 3 --psm 4',  # Single column
+                r'--oem 3 --psm 3',  # Fully automatic page segmentation
+            ]
             
-            # Extract text
-            text = pytesseract.image_to_string(image, config=custom_config)
+            best_text = ""
+            max_confidence = 0
             
-            return text.strip()
+            for config in configs:
+                try:
+                    # Get text with confidence data
+                    data = pytesseract.image_to_data(enhanced_image, config=config, output_type=pytesseract.Output.DICT)
+                    
+                    # Filter out low confidence words and build text
+                    text_parts = []
+                    total_conf = 0
+                    word_count = 0
+                    
+                    for i, conf in enumerate(data['conf']):
+                        if int(conf) > 30:  # Only include words with confidence > 30
+                            word = data['text'][i].strip()
+                            if word:
+                                text_parts.append(word)
+                                total_conf += int(conf)
+                                word_count += 1
+                    
+                    if word_count > 0:
+                        avg_confidence = total_conf / word_count
+                        current_text = ' '.join(text_parts)
+                        
+                        if avg_confidence > max_confidence and len(current_text) > len(best_text):
+                            max_confidence = avg_confidence
+                            best_text = current_text
+                            
+                except Exception as e:
+                    logger.warning(f"Config {config} failed: {str(e)}")
+                    continue
+            
+            # If no good result, fallback to simple extraction
+            if not best_text.strip():
+                config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789<>/.-'
+                best_text = pytesseract.image_to_string(enhanced_image, config=config)
+            
+            logger.debug(f"Best OCR result (confidence: {max_confidence:.1f}): {best_text[:100]}...")
+            return best_text.strip()
             
         except Exception as e:
             logger.error(f"Error processing image {image_path}: {str(e)}")
@@ -79,11 +120,43 @@ class OCRProcessor:
                     # Enhance image for better OCR
                     enhanced_image = self._enhance_image(image)
                     
-                    # Configure Tesseract
-                    custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789<>/'
+                    # Use enhanced OCR processing for each page
+                    # Try multiple configurations to get best results
+                    configs = [
+                        r'--oem 3 --psm 6',
+                        r'--oem 3 --psm 4',
+                        r'--oem 3 --psm 3'
+                    ]
                     
-                    # Extract text from this page
-                    page_text = pytesseract.image_to_string(enhanced_image, config=custom_config)
+                    best_page_text = ""
+                    max_conf = 0
+                    
+                    for config in configs:
+                        try:
+                            data = pytesseract.image_to_data(enhanced_image, config=config, output_type=pytesseract.Output.DICT)
+                            text_parts = []
+                            total_conf = 0
+                            word_count = 0
+                            
+                            for j, conf in enumerate(data['conf']):
+                                if int(conf) > 30:
+                                    word = data['text'][j].strip()
+                                    if word:
+                                        text_parts.append(word)
+                                        total_conf += int(conf)
+                                        word_count += 1
+                            
+                            if word_count > 0:
+                                avg_conf = total_conf / word_count
+                                current_text = ' '.join(text_parts)
+                                if avg_conf > max_conf:
+                                    max_conf = avg_conf
+                                    best_page_text = current_text
+                                    
+                        except Exception:
+                            continue
+                    
+                    page_text = best_page_text or pytesseract.image_to_string(enhanced_image)
                     extracted_text += page_text + "\n"
                 
                 return extracted_text.strip()

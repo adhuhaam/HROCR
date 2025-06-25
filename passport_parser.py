@@ -13,16 +13,23 @@ class PassportParser:
                 r'Document\s+No\.?\s*[:\-]?\s*([A-Z0-9]{6,12})',
                 r'P<[A-Z]{3}([A-Z0-9]{9})',
                 r'([A-Z]{1,2}[0-9]{6,8})',
+                r'No\.\s*([A-Z0-9]{6,12})',
+                r'Number[:\-\s]*([A-Z0-9]{6,12})',
+                r'([0-9]{8,10})',  # Common passport number format
             ],
             'surname': [
-                r'Surname[:\-\s]*([A-Z\s]+?)(?:\n|Given|Name)',
+                r'Surname[:\-\s]*([A-Z\s]+?)(?:\n|Given|Name|Fathers)',
                 r'Family\s+Name[:\-\s]*([A-Z\s]+?)(?:\n|Given)',
                 r'P<[A-Z]{3}([A-Z]+)<<',
+                r'Name[:\-\s]*([A-Z\s]+?)(?:\n|Fathers|Given)',
+                r'([A-Z]{2,})\s+[A-Z]{2,}',  # Pattern for names in caps
             ],
             'given_names': [
-                r'Given\s+Names?[:\-\s]*([A-Z\s]+?)(?:\n|Nationality|Date)',
+                r'Given\s+Names?[:\-\s]*([A-Z\s]+?)(?:\n|Nationality|Date|Fathers)',
                 r'First\s+Name[:\-\s]*([A-Z\s]+?)(?:\n|Nationality|Date)',
                 r'P<[A-Z]{3}[A-Z]+<<([A-Z<]+)',
+                r'Fathers\s+Name[:\-\s]*([A-Z\s]+?)(?:\n|Mothers|Date)',
+                r'Name\s+([A-Z]{2,})\s+([A-Z]{2,})',  # Extract first name from full name
             ],
             'nationality': [
                 r'Nationality[:\-\s]*([A-Z\s]+?)(?:\n|Date|Sex)',
@@ -91,8 +98,9 @@ class PassportParser:
         text = re.sub(r'\s+', ' ', text)
         text = re.sub(r'\n+', '\n', text)
         
-        # Fix common OCR errors
-        text = text.replace('0', 'O').replace('1', 'I')  # In names/text fields
+        # Fix common OCR errors for specific contexts
+        # Don't replace numbers in passport numbers, dates, etc.
+        # text = text.replace('0', 'O').replace('1', 'I')  # Disabled to preserve numbers
         
         return text.strip()
     
