@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Passport - Passport OCR System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold">
+                    <i class="fas fa-cloud-upload-alt me-3"></i>
+                    Upload Passport Document
+                </h1>
+                <p class="lead text-muted">
+                    Drag and drop your passport image or PDF file to extract information automatically
+                </p>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <form id="uploadForm" action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                        <!-- Drag and Drop Zone -->
+                        <div id="dropZone" class="drop-zone mb-4">
+                            <div class="drop-zone-content text-center">
+                                <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
+                                <h4 class="mb-3">Drop your passport file here</h4>
+                                <p class="text-muted mb-3">or</p>
+                                <button type="button" class="btn btn-primary btn-lg" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-folder-open me-2"></i>
+                                    Choose File
+                                </button>
+                                <input type="file" id="fileInput" name="file" accept=".png,.jpg,.jpeg,.pdf" style="display: none;">
+                                
+                                <div class="mt-4">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Supported formats: PNG, JPG, JPEG, PDF (Max 16MB)
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- File Preview -->
+                            <div id="filePreview" class="file-preview" style="display: none;">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <i id="fileIcon" class="fas fa-file fa-2x me-3"></i>
+                                        <div>
+                                            <div id="fileName" class="fw-bold"></div>
+                                            <div id="fileSize" class="text-muted small"></div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearFile()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Processing Status -->
+                        <div id="processingStatus" class="text-center" style="display: none;">
+                            <div class="spinner-border text-primary me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span>Processing your passport document...</span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" id="submitBtn" class="btn btn-success btn-lg" disabled>
+                                <i class="fas fa-magic me-2"></i>
+                                Process Passport
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-camera text-primary me-2"></i>
+                                Photo Guidelines
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check-circle text-success me-2"></i>Good lighting</li>
+                                <li><i class="fas fa-check-circle text-success me-2"></i>Clear, readable text</li>
+                                <li><i class="fas fa-check-circle text-success me-2"></i>Minimal shadows</li>
+                                <li><i class="fas fa-check-circle text-success me-2"></i>Straight orientation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-shield-alt text-primary me-2"></i>
+                                Privacy & Security
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check-circle text-success me-2"></i>Files processed locally</li>
+                                <li><i class="fas fa-check-circle text-success me-2"></i>No cloud storage</li>
+                                <li><i class="fas fa-check-circle text-success me-2"></i>Temporary file cleanup</li>
+                                <li><i class="fas fa-check-circle text-success me-2"></i>Secure processing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}
