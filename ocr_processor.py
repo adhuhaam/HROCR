@@ -4,7 +4,7 @@ from PIL import Image
 import PyPDF2
 import io
 import logging
-from pdf2image import pdfplat_from_path
+
 
 logger = logging.getLogger(__name__)
 

@@ -37,6 +37,7 @@ def upload_file():
         try:
             filename = secure_filename(file.filename)
             # Add timestamp to avoid conflicts
+            import time
             timestamp = str(int(time.time()))
             name, ext = os.path.splitext(filename)
             filename = f"{name}_{timestamp}{ext}"
@@ -100,4 +101,4 @@ def delete_record(record_id):
     flash('Record deleted successfully!', 'success')
     return redirect(url_for('records'))
 
-import time
+
